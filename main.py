@@ -7,6 +7,8 @@ with open('database.txt', 'r', encoding='utf-8') as f:
         id, name = line.strip().split(' = ')
         database[id] = name
 
+region = input("Enter your region (E/P/J/W): ").upper()
+
 root_folder = input("Enter the directory path: ")
 
 if not os.path.exists(root_folder):
@@ -18,10 +20,19 @@ for folder in os.listdir(root_folder):
     if os.path.isdir(folder_path):
         matches = process.extract(folder, database.values(), limit=1)
         if matches:
-            best_match = matches[0]
-            for id, name in database.items():
-                if name == best_match[0]:
-                    new_name = f"{name} [{id}]"
-                    os.rename(folder_path, os.path.join(root_folder, new_name))
-                    print(f"Renamed folder {folder} to {new_name}")
+            best_match_name = matches[0][0]
+            matching_ids = [id for id, name in database.items() if name == best_match_name]
+            
+            selected_id = None
+            for id in matching_ids:
+                if id.endswith(region):
+                    selected_id = id
                     break
+            
+            if not selected_id and matching_ids:
+                selected_id = matching_ids[0]
+            
+            if selected_id:
+                new_name = f"{best_match_name} [{selected_id}]"
+                os.rename(folder_path, os.path.join(root_folder, new_name))
+                print(f"Renamed folder {folder} to {new_name}")
